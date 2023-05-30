@@ -60,12 +60,15 @@ services:
     environment:
       - BROKER_SERVER_ADDRESS=broker:29092
     ports:
-      - "3000:5000"
+      - "5000"
     restart: always
     depends_on:
       - DatabaseService
     networks:
       - backend
+    deploy:
+      mode: replicated
+      replicas: 2
 
   AddressServiceAPI:
     build:
@@ -192,12 +195,15 @@ services:
       - TOPIC=order_topic
       - TOKEN_SECRET=SUMMERBREAK
     ports:
-      - "5005:5000"
+      - "5000"
     restart: always
     depends_on:
       - DatabaseService
     networks:
       - backend
+    deploy:
+      mode: replicated
+      replicas: 2
 
   UserServiceAPI:
     build:
@@ -214,12 +220,15 @@ services:
       - TOPIC=user_topic
       - TOKEN_SECRET=SUMMERBREAK
     ports:
-      - "5006:5000"
+      - "5000"
     restart: always
     depends_on:
       - DatabaseService
     networks:
       - backend
+    deploy:
+      mode: replicated
+      replicas: 2
 
   nginx:
     build: ./nginx
