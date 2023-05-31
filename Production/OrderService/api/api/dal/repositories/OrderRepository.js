@@ -80,6 +80,27 @@ class OrderRepository {
         }
     }
 
+    async getOrderCount() {
+        try {
+            await sql.connect(this.config);
+            const result = await sql.query `SELECT COUNT(*) as orders FROM orders`;
+            const count = result.recordset[0].orders; // Get the count
+
+            this.produceKafkaMessage("info", "orders", `Orders count fetched`);
+
+            if (!count) {
+                throw new Error('No orders found');
+            }
+
+            return count; // Return the count instead of the array of customers
+        } catch (error) {
+            this.produceKafkaMessage("error", "orders", `Failed to fetch orders count`);
+            throw new Error(`Failed to fetch orders count: ${error.message}`);
+        } finally {
+            await sql.close();
+        }
+    }
+
     async createOrder(order) {
         try {
             await sql.connect(this.config);

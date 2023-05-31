@@ -23,33 +23,37 @@ app.use(cookieParser());
 
 // API key verification function
 const verifyApiKey = async (req, res, next) => {
-    const apiKey = req.header('x-api-key'); // Assuming the API key is sent in the 'x-api-key' header
+    if (['POST', 'PUT', 'DELETE'].includes(req.method)) {
+        const apiKey = req.header('x-api-key'); // Assuming the API key is sent in the 'x-api-key' header
 
-    try {
-        if (!apiKey || apiKey === null || apiKey === "") {
-            return res.status(401).json({
-                error: 'Unauthorized'
+        try {
+            if (!apiKey || apiKey === null || apiKey === "") {
+                return res.status(401).json({
+                    error: 'Unauthorized'
+                });
+            }
+
+            // Fetch the user from the database based on the API key
+            const user = await security.findByApiKey(apiKey); // Implement this function to retrieve the user by API key
+
+            if (!user) {
+                return res.status(401).json({
+                    error: 'Unauthorized'
+                });
+            }
+
+            // Attach the user object to the request for further processing
+            req.user = user;
+
+            next(); // API key is valid, proceed to the next middleware or route handler
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({
+                error: 'Internal Server Error'
             });
         }
-
-        // Fetch the user from the database based on the API key
-        const user = await security.findByApiKey(apiKey); // Implement this function to retrieve the user by API key
-
-        if (!user) {
-            return res.status(401).json({
-                error: 'Unauthorized'
-            });
-        }
-
-        // Attach the user object to the request for further processing
-        req.user = user;
-
-        next(); // API key is valid, proceed to the next middleware or route handler
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            error: 'Internal Server Error'
-        });
+    } else {
+    next();
     }
 };
 

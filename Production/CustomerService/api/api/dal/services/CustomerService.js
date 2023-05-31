@@ -11,12 +11,16 @@ class CustomerService {
         return this.customerRepository.getAllCustomers();
     }
 
+    async getCustomerCount() {
+        return this.customerRepository.getCustomerCount();
+    }
+
     async getCustomerById(id) {
         return this.customerRepository.getCustomerById(id);
     }
 
     async validateUUID(id, serviceName, path, port) {
-        const url = `http://${serviceName}/${path}/${id}`;
+        const url = `http://${serviceName}:5000/${path}/${id}`;
         console.warn(url)
         try {
             const response = await axios.get(url);

@@ -1,5 +1,7 @@
 const Joi = require('joi'); // import the Joi validation library
 const OrderRepository = require('../repositories/OrderRepository');
+const axios = require('axios')
+
 
 class OrderService {
     constructor() {
@@ -10,8 +12,24 @@ class OrderService {
         return this.orderRepository.getAllOrders();
     }
 
+    async getOrderCount() {
+        return this.orderRepository.getOrderCount();
+    }
+
     async getOrderById(id) {
         return this.orderRepository.getOrderById(id);
+    }
+
+    async validateUUID(id, serviceName, path, port) {
+        const url = `http://${serviceName}:5000/${path}/${id}`;
+        console.warn(url)
+        try {
+            const response = await axios.get(url);
+            return response.status === 200;
+        } catch (error) {
+            console.error(`Error validating ${serviceName} UUID: ${error.message}`);
+            return false;
+        }
     }
 
     async createOrder(orderData) {
@@ -21,6 +39,13 @@ class OrderService {
             order_date: Joi.string().allow(''), // Make it an Optional field -> item_id: Joi.string().allow(''), 
             notes: Joi.string().required()
         });
+
+        const isCustomerValid = await this.validateUUID(orderData.customer_id, 'CustomerServiceAPI', 'customer');
+        console.log(isCustomerValid)
+
+        if (!isCustomerValid) {
+            throw new Error('Invalid customer ID');
+        }
 
         // Validate the orderData against the schema
         const {

@@ -10,6 +10,11 @@ class UserService {
         return this.userRepository.getAllUsers();
     }
 
+    async getUserCount() {
+        return this.userRepository.getUserCount();
+    }
+
+
     async getUserById(id) {
         return this.userRepository.getUserById(id);
     }

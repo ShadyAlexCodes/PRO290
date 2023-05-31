@@ -88,6 +88,29 @@ class UserRepository {
         }
     }
 
+    async getUserCount() {
+        try {
+            await sql.connect(this.config);
+            const result = await sql.query `SELECT COUNT(*) as usersCount FROM users`;
+            const count = result.recordset[0].usersCount; // Get the count
+
+            this.produceKafkaMessage("info", "getUsersCount", `Users count fetched`);
+
+            if (!count) {
+                throw new Error('No users found');
+            }
+
+            return count; // Return the count instead of the array of userss
+        } catch (error) {
+            this.produceKafkaMessage("error", "getUsersCount", `Failed to fetch users count`);
+            throw new Error(`Failed to fetch users countzh: ${error.message}`);
+        } finally {
+            await sql.close();
+        }
+    }
+
+
+
     async createUser(user) {
         try {
             await sql.connect(this.config);

@@ -1,17 +1,21 @@
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const logger = require('morgan');
 const Eureka = require('eureka-js-client').Eureka;
+const cors = require("cors");
+const {
+    initialize
+} = require('express-openapi');
+
 const {
     Kafka
 } = require('kafkajs');
 const BaseConsumer = require('./consumers/BaseConsumer');
 
+// Create an instance of Express app
+const app = express();
 
-
-var app = express();
-require('dotenv').config();
 // Middleware
 app.use(logger('dev'));
 app.use(express.json());
@@ -20,6 +24,8 @@ app.use(express.urlencoded({
 }));
 app.use(cookieParser());
 
+
+app.use(cors());
 
 // Setup Kafka
 const kafka = new Kafka({
@@ -60,6 +66,14 @@ const client = new Eureka({
 
 client.logger.level('debug');
 client.start();
+
+initialize({
+    app,
+    apiDoc: require('./api/api-doc'),
+    paths: './api/paths'
+
+});
+
 
 
 // Error handling

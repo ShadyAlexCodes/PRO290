@@ -55,6 +55,7 @@ class CustomerRepository {
             sql.close();
         }
     }
+    
 
     async getAllCustomers() {
         try {
@@ -77,6 +78,27 @@ class CustomerRepository {
         } catch (error) {
             this.produceKafkaMessage("error", "getAllCustomers", `Failed to fetch all customers`);
             throw new Error(`Failed to fetch all customers: ${error.message}`);
+        } finally {
+            await sql.close();
+        }
+    }
+
+    async getCustomerCount() {
+        try {
+            await sql.connect(this.config);
+            const result = await sql.query `SELECT COUNT(*) as customerCount FROM customer`;
+            const count = result.recordset[0].customerCount; // Get the count
+
+            this.produceKafkaMessage("info", "getCustomerCount", `Customer count fetched`);
+
+            if (!count) {
+                throw new Error('No customers found');
+            }
+
+            return count; // Return the count instead of the array of customers
+        } catch (error) {
+            this.produceKafkaMessage("error", "getCustomerCount", `Failed to fetch customer count`);
+            throw new Error(`Failed to fetch customer count: ${error.message}`);
         } finally {
             await sql.close();
         }
